@@ -1,20 +1,12 @@
 { config, pkgs, inputs, ... }:
 
-let
-  myKodi = pkgs.kodi-wayland.passthru.withPackages (kp: with kp; [
-    youtube
-    libretro
-    joystick
-    inputstream-adaptive
-  ]);
-in
 {
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking = {
     useDHCP = false;
-    hostName = "acekodi";
+    hostName = "nuke";
     wireless.enable = true;
     wireless.networks = {
       "Poundshaggers Refugees - 2.4".psk = pkgs.lib.strings.trim (builtins.readFile
@@ -47,47 +39,22 @@ in
     LC_TIME = "en_US.UTF-8";
   };
 
-  #services.xserver.enable = true;
-  #services.displayManager.autoLogin = {
-  #  enable = true;
-  #  user = "kodi";
-  #  #user = "pocket";
-  #};
-  #services.xserver.dpi = 192;
+  services.xserver.enable = true;
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "pocket";
+  };
+  services.xserver.dpi = 192;
 
   # Cinnamon
-  #services.xserver.displayManager.lightdm.greeters.slick  = {
-  #  enable = true;
-  #  font = {
-  #    name = "Sans 14";
-  #    package = pkgs.dejavu_fonts;
-  #  };
-  #};
-  #services.xserver.desktopManager.cinnamon.enable = true;
-
-  # Kodi
-  #services.xserver.desktopManager.kodi = {
-  #  enable = true;
-  #  package = (pkgs.kodi.withPackages (kp: with kp; [
-  #    kp.joystick
-  #    kp.youtube
-  #    kp.invidious
-  #  ]));
-  #};
-  #services.xserver.displayManager.lightdm.greeter.enable = false;
-  users.extraUsers.kodi = {
-    isNormalUser = true;
-    extraGroups = [ ];
-  };
-  systemd.services.kodi.environment = {
-    KODI_AE_SINK = "PIPEWIRE";
-  };
-  services.cage = {
+  services.xserver.displayManager.lightdm.greeters.slick  = {
     enable = true;
-    user = "kodi";
-    program = "${myKodi}/bin/kodi-standalone";
-    extraArguments = [ "-s" ];
+    font = {
+      name = "Sans 14";
+      package = pkgs.dejavu_fonts;
+    };
   };
+  services.xserver.desktopManager.cinnamon.enable = true;
 
   services.xserver.xkb = {
     layout = "us";
