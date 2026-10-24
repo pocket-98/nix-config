@@ -1,27 +1,24 @@
 { config, pkgs, inputs, ... }:
 
-let
-  myKodi = pkgs.kodi-wayland.passthru.withPackages (kp: with kp; [
-    youtube
-    libretro
-    joystick
-    inputstream-adaptive
-  ]);
-in
 {
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  nixpkgs.config = {
+    allowUnfree = true;
+    cudaSupport = true;
+  };
+
   networking = {
     useDHCP = false;
-    hostName = "acekodi";
+    hostName = "servus";
     wireless.enable = true;
     wireless.networks = {
       "Poundshaggers Refugees - 2.4".psk = pkgs.lib.strings.trim (builtins.readFile
         "/home/pocket/secrets/wifi-poundshaggers"
       );
     };
-    interfaces.wlp2s0 = {
+    interfaces.wlp0s20f0u9 = {
       useDHCP = false;
       ipv4.addresses = [{
         address = "10.0.0.44";
@@ -47,54 +44,25 @@ in
     LC_TIME = "en_US.UTF-8";
   };
 
-  #services.xserver.enable = true;
-  #services.displayManager.autoLogin = {
-  #  enable = true;
-  #  user = "kodi";
-  #  #user = "pocket";
-  #};
-  #services.xserver.dpi = 192;
-
-  # Cinnamon
-  #services.xserver.displayManager.lightdm.greeters.slick  = {
-  #  enable = true;
-  #  font = {
-  #    name = "Sans 14";
-  #    package = pkgs.dejavu_fonts;
-  #  };
-  #};
-  #services.xserver.desktopManager.cinnamon.enable = true;
-
-  # Kodi
-  #services.xserver.desktopManager.kodi = {
-  #  enable = true;
-  #  package = (pkgs.kodi.withPackages (kp: with kp; [
-  #    kp.joystick
-  #    kp.youtube
-  #    kp.invidious
-  #  ]));
-  #};
-  #services.xserver.displayManager.lightdm.greeter.enable = false;
-  users.extraUsers.kodi = {
-    isNormalUser = true;
-    extraGroups = [ ];
-  };
-  systemd.services.kodi.environment = {
-    KODI_AE_SINK = "PIPEWIRE";
-  };
-  services.cage = {
-    enable = true;
-    user = "kodi";
-    program = "${myKodi}/bin/kodi-standalone";
-    extraArguments = [ "-s" ];
-  };
-
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
+  services.xserver = {
+    videoDrivers = [ "nvidia" ];
+    xkb = {
+      layout = "us";
+      variant = "";
+    };
   };
 
   hardware.bluetooth.enable = true;
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+  hardware.nvidia = {
+    modesetting.enable = true;
+    nvidiaSettings = true;
+    open = true;
+    package= config.boot.kernelPackages.nvidiaPackages.stable;
+  };
 
   services.printing.enable = true;
 
@@ -115,11 +83,16 @@ in
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  services.logind.settings.Login = {
-    HandleLidSwitch = "ignore";
-    HandleLidSwitchExternalPower = "ignore";
-    HandleLidSwitchDocked = "ignore";
+  # Cinnamon
+  services.xserver.enable = true;
+  services.xserver.displayManager.lightdm.greeters.slick  = {
+    enable = true;
+    font = {
+      name = "Sans 14";
+      package = pkgs.dejavu_fonts;
+    };
   };
+  services.xserver.desktopManager.cinnamon.enable = true;
 
   users.users."pocket" = {
     isNormalUser = true;
@@ -167,7 +140,7 @@ in
 
   # programs.mtr.enable = true;
 
-  programs.firefox.enable = true;
+  programs.firefox.enable = false;
 
   programs.bash = {
     enable = true;
